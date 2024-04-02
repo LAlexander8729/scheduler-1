@@ -1,8 +1,10 @@
-import { BuildSemester as BuildSemesters, IsCoursePositionValid, MoveCourse} from "./scheduler-domain.js";
+import { BuildSemester as BuildSemesters, IsCoursePositionValid, MoveCourse, resetScheduledCourses} from "./scheduler-domain.js";
+import { ClearSavedSchedule, GetSavedSchedule, SaveSchedule } from "./scheduler-service.js";
 
 let currentSchedule = [];
 
 function BasicScheduleSetup() {
+  resetScheduledCourses();
   currentSchedule = BuildSemesters();
   makeSemesterSchedule(currentSchedule);
 }
@@ -26,9 +28,9 @@ function makeSemesterSchedule(scheduleToFormat) {
     newSemesterDiv.append(semesterNum);
     newSemesterDiv.setAttribute("id", "semester-" + semesterNumber)
     newSemesterDiv.addEventListener("drop", (event) =>  {
-      currentSchedule = MoveCourse(currentSchedule, event.dataTransfer.getData("text/plain"), newSemesterDiv.getAttribute("id").split("-")[1]);
+      scheduleToFormat = MoveCourse(scheduleToFormat, event.dataTransfer.getData("text/plain"), newSemesterDiv.getAttribute("id").split("-")[1]);
       ClearOutSchedule();
-      makeSemesterSchedule(currentSchedule);
+      makeSemesterSchedule(scheduleToFormat);
     });
     newSemesterDiv.addEventListener("dragenter", (event) =>  {
       event.preventDefault();
@@ -75,7 +77,7 @@ function makeSemesterSchedule(scheduleToFormat) {
         })
         }
 
-        const isClassPositionValid = IsCoursePositionValid(course.id, currentSchedule, semesterNumber);
+        const isClassPositionValid = IsCoursePositionValid(course.id, scheduleToFormat, semesterNumber);
         if(isClassPositionValid[0])
         {
           newCourseCard.classList.add("cardDiv-error");
@@ -102,7 +104,6 @@ const ClearOutSchedule = () => {
 function UnassignedClasslistDisplay() {
   const UnassignedDisplay = document.getElementById("UnassignedClasslist");
   const Classlist = GetClasslist();
-  console.log(Classlist);
   Classlist.forEach((course) => {
     const CourseCard = document.createElement("article");
     CourseCard.append(BuildClasscard(course));
@@ -110,4 +111,18 @@ function UnassignedClasslistDisplay() {
   });
 }
 
-BasicScheduleSetup();
+const resetScheduleButton = document.getElementById("resetScheduleButton");
+resetScheduleButton.addEventListener("click", (event) => {
+    ClearOutSchedule();
+    BasicScheduleSetup();
+    ClearSavedSchedule();
+})
+
+const scheduleSaved = GetSavedSchedule();
+if(scheduleSaved === "There is no schedule saved!")
+{
+   BasicScheduleSetup();
+} else {
+  makeSemesterSchedule(scheduleSaved);
+  SaveSchedule(scheduleSaved);
+}
