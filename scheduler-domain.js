@@ -213,13 +213,16 @@ const IsCoursePositionValid = (courseID, fullSchedule, semesterNum) => {
   for (let index = 0; index < semesterNum - 2; index++) {
     fullListToCheck = [...fullListToCheck, ...fullSchedule[index]];
   }
-  if (!fullListToCheck.map((c) => c.id).includes(courseToCheck[0].prereqs)) {
-    hasFailed = true;
-    console.log(courseToCheck[0].title);
-    console.log(fullListToCheck.map((c) => c.id));
-    console.log(courseToCheck[0].prereqs);
-    errorMessage = "The prereqs for this class are not met!";
-  }
+  courseToCheck[0].prereqs.forEach((prereq) => {
+    if (!fullListToCheck.map((c) => c.id).includes(prereq)) {
+      hasFailed = true;
+      console.log(courseToCheck[0].title);
+      console.log(fullListToCheck.map((c) => c.id));
+      console.log(courseToCheck[0].prereqs);
+      errorMessage = "The prereqs for this class are not met!";
+    }
+  })
+
   if(!hasFailed)
   {
     const semesterToCheck = semesterNum % 2 !== 0 ? "Spring" : "Fall";

@@ -18,7 +18,8 @@ function makeSemesterSchedule(scheduleToFormat) {
     const newSemesterDiv = document.createElement("div");
     newSemesterDiv.setAttribute("class", "schedule-column");
     const semesterNum = document.createElement('h2');
-    semesterNum.innerText = "Semester " + semesterNumber;
+    let semesterSeason = semesterNumber % 2 !== 0 ? "Spring" : "Fall";
+    semesterNum.innerText = "Semester " + semesterNumber + " - " + semesterSeason;
     semesterNumber += 1;
 
     //Add Draggable Logic To Semester
