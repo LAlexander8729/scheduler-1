@@ -4,6 +4,7 @@
     --secondary-background-color: rgb(244, 223, 200);
     --card-background-color: rgb(214, 179, 156);
     --secondary-text-color: rgb(244, 234, 224);
+    --draggin-Card-color: rgb(86, 86, 196);
   }
 
 body{
@@ -36,7 +37,10 @@ body{
  }
   
 
-
+.Drag
+{
+  color: var(--draggin-Card-color);
+}
   /*
   #UnassignedClasslist {
     border: solid var(--border-color);

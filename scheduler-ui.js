@@ -1,50 +1,52 @@
-import { BuildSemester as BuildSemesters } from "./scheduler-domain.js";
+import { BuildSemester as BuildSemesters, IsCoursePositionValid, MoveCourse} from "./scheduler-domain.js";
 
-function BuildClasscard(Class) {
-  const newCourseCard = document.createElement("article");
-  const CourseID = document.createElement("p");
-  const CourseTitle = document.createElement("p");
-  const CourseCredits = document.createElement("p");
-  const CoursePrereqs = document.createElement("p");
-  CourseID.classList.add("ClassInfo");
-  CourseTitle.classList.add("ClassInfo");
+let currentSchedule = [];
 
-  CourseID.textContent = `Class ID: ${Class.id}`;
-  CourseTitle.textContent = `Class Title: ${Class.title}`;
-  CourseCredits.textContent = `Class Credits: ${Class.credits}`;
-  CoursePrereqs.textContent = `Class Prerequisites:`;
-
-  if (Class.CoursePrereqs && Class.CoursePrereqs.length > 0) {
-    CoursePrereqs.textContent += ` ${Class.CoursePrereqs[0]}`;
-    for (let i = 1; i < Class.CoursePrereqs.length; i++) {
-      CoursePrereqs.textContent += `, ${Class.CoursePrereqs[i]}`;
-    }
-  } else {
-    CoursePrereqs.textContent += " None";
-  }
-
-  newCourseCard.append(CourseID);
-  newCourseCard.append(CourseTitle);
-  newCourseCard.append(CourseCredits);
-  newCourseCard.append(CoursePrereqs);
-  newCourseCard.setAttribute("id", "Class");
-  return newCourseCard;
+function BasicScheduleSetup() {
+  currentSchedule = BuildSemesters();
+  makeSemesterSchedule(currentSchedule);
 }
 
-function makeSemesterSchedule() {
+function makeSemesterSchedule(scheduleToFormat) {
   const scheduleRoot = document.getElementById("assigned-classes");
-  const semestersToRender = BuildSemesters();
+  const semestersToRender = scheduleToFormat;
   let semesterNumber = 1;
   semestersToRender.forEach((currentSemester) => {
+
+    
+    //Add Header To Columns
     const newSemesterDiv = document.createElement("div");
     newSemesterDiv.setAttribute("class", "schedule-column");
-    const semesterNum = document.createElement('h2')
+    const semesterNum = document.createElement('h2');
     semesterNum.innerText = "Semester " + semesterNumber;
     semesterNumber += 1;
+
+    //Add Draggable Logic To Semester
     newSemesterDiv.append(semesterNum);
+    newSemesterDiv.setAttribute("id", "semester-" + semesterNumber)
+    newSemesterDiv.addEventListener("drop", (event) =>  {
+      currentSchedule = MoveCourse(currentSchedule, event.dataTransfer.getData("text/plain"), newSemesterDiv.getAttribute("id").split("-")[1]);
+      ClearOutSchedule();
+      makeSemesterSchedule(currentSchedule);
+    });
+    newSemesterDiv.addEventListener("dragenter", (event) =>  {
+      event.preventDefault();
+    })
+    newSemesterDiv.addEventListener("dragover", (event) =>  {
+      event.preventDefault();
+    })
     currentSemester.forEach((course) => {
+        //Card Draggable Logic
         const newCourseCard = document.createElement("div");
+        newCourseCard.draggable = true;
+
+        newCourseCard.addEventListener("dragstart", (event) => 
+        {
+          event.dataTransfer.setData("text/plain", course.id);
+          console.log(event.dataTransfer);
+        })
         newCourseCard.setAttribute("class", "schedule-card")
+      
 
         const courseCardTitle = document.createElement("p");
         courseCardTitle.innerText = course.title;
@@ -71,13 +73,29 @@ function makeSemesterSchedule() {
             prereqList.appendChild(newListItem);
         })
         }
+
+        const isClassPositionValid = IsCoursePositionValid(course.id, currentSchedule, semesterNumber);
+        if(isClassPositionValid[0])
+        {
+          newCourseCard.classList.add("cardDiv-error");
+          const errorMessage = document.createElement("p");
+          errorMessage.innerText = isClassPositionValid[1];
+          newCourseCard.appendChild(errorMessage);
+        }
         
         newSemesterDiv.appendChild(newCourseCard);
-        console.log(newSemesterDiv);
     })
     
     scheduleRoot.appendChild(newSemesterDiv);
   })
+}
+
+const ClearOutSchedule = () => {
+  const scheduleRoot = document.getElementById("assigned-classes");
+  const numberOfChildren = scheduleRoot.children.length;
+  for (let index = 0; index < numberOfChildren; index++) {
+    scheduleRoot.removeChild(scheduleRoot.children[0]);
+  }
 }
 
 function UnassignedClasslistDisplay() {
@@ -91,4 +109,4 @@ function UnassignedClasslistDisplay() {
   });
 }
 
-makeSemesterSchedule();
+BasicScheduleSetup();
