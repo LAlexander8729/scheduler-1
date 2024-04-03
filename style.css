@@ -57,6 +57,14 @@ body{
 {
   color: var(--draggin-Card-color);
 }
+
+#resetScheduleButton{
+  margin: 1em;
+  padding: 0.5em;
+  border-radius: 0.75em;
+  box-shadow: 2px 2px 6px  #95A78D;
+  text-shadow: 0 0 0 #22181C;
+}
   /*
   #UnassignedClasslist {
     border: solid var(--border-color);
